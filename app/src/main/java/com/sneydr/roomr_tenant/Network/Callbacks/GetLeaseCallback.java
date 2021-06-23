@@ -13,7 +13,7 @@ public class GetLeaseCallback extends NetworkCallback  {
         if (response.isSuccessful()) {
             return;
         }
-        notifyFailure(response.body().string());
+        notifyFailure("Lease", response.body().string());
     }
 
 }

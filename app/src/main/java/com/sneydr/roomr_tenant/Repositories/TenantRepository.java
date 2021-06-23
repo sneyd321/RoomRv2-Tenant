@@ -5,8 +5,13 @@ import android.app.Application;
 
 import com.sneydr.roomr_tenant.Entities.Login.Login;
 import com.sneydr.roomr_tenant.Entities.Users.Tenant;
+import com.sneydr.roomr_tenant.Network.Callbacks.NetworkCallback;
 import com.sneydr.roomr_tenant.Network.Callbacks.NetworkCallbackType;
+import com.sneydr.roomr_tenant.Network.Network;
 import com.sneydr.roomr_tenant.Network.Observers.NetworkObserver;
+import com.squareup.picasso.Callback;
+
+import java.io.File;
 
 import okhttp3.Request;
 
@@ -46,10 +51,20 @@ public class TenantRepository extends Repository {
 
     }
 
+
+
     public void loginTenant(Login login, NetworkObserver observer) {
         if (doesHaveInternet(observer) && doesHaveInternetPermission(observer)) {
             Request request = network.login(login);
             network.send(request, NetworkCallbackType.GetTenant, observer);
+        }
+    }
+
+
+    public void insertProfile(String authToken, File file, NetworkObserver observer) {
+        if (doesHaveInternet(observer) && doesHaveInternetPermission(observer)) {
+            Request request = network.uploadProfilePicture(authToken, file);
+            network.send(request, NetworkCallbackType.Empty, observer);
         }
     }
 

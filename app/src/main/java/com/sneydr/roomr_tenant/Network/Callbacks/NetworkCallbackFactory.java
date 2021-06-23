@@ -32,7 +32,21 @@ public class NetworkCallbackFactory {
             case GetSignInURL:
                 callback = new GetSignUpURLCallback();
                 break;
-        }
+            case GetAddHouseURL:
+                callback = new GetAddHouseURLCallback();
+                break;
+            case GetDocuments:
+                callback = new GetDocumentsCallback();
+                break;
+            case GetRentDetails:
+                callback = new GetRentDetailsCallback();
+                break;
+            case Empty:
+                callback = new EmptyNetworkCallback();
+            case GetHomeowner:
+                callback = new GetHomeownerCallback();
+
+    }
         if (callback != null) {
             callback.registerObserver(observer);
         }

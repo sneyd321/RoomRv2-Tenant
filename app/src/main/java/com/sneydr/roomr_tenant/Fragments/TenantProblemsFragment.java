@@ -26,6 +26,8 @@ import com.sneydr.roomr_tenant.ViewModels.ProblemViewModel;
 import com.sneydr.roomr_tenant.databinding.FragmentTenantProblemBinding;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 public class TenantProblemsFragment extends FragmentTemplate implements ProblemsObserver, SwipeRefreshLayout.OnRefreshListener, View.OnClickListener {
@@ -46,6 +48,7 @@ public class TenantProblemsFragment extends FragmentTemplate implements Problems
         binding.swrTenantProblems.setOnRefreshListener(this);
         binding.fabAddProblem.setOnClickListener(this);
         binding.rcyTenantProblems.setLayoutManager(new LinearLayoutManager(getActivity()));
+
         return binding.getRoot();
     }
 
@@ -65,8 +68,8 @@ public class TenantProblemsFragment extends FragmentTemplate implements Problems
     }
 
     @Override
-    public void onFailure(String response) {
-        super.onFailure(response);
+    public void onFailure(String tag, String response) {
+        super.onFailure(tag, response);
         binding.swrTenantProblems.setRefreshing(false);
     }
 
@@ -83,10 +86,12 @@ public class TenantProblemsFragment extends FragmentTemplate implements Problems
                     binding.rcyTenantProblems.setLayoutManager(new LinearLayoutManager(getActivity()));
                 }
                 else {
-                    binding.rcyTenantProblems.setLayoutManager(new GridLayoutManager(getActivity(), 2));
+                    GridLayoutManager gridLayoutManager = new GridLayoutManager(context, 2);
+                    binding.rcyTenantProblems.setLayoutManager(gridLayoutManager);
                 }
                 LayoutAnimationController animation = AnimationUtils.loadLayoutAnimation(context, R.anim.layout_animation_fall_down);
                 binding.rcyTenantProblems.setLayoutAnimation(animation);
+                Collections.reverse(problems);
                 adapter = new ProblemsRecyclerViewAdapter(problems);
                 binding.rcyTenantProblems.swapAdapter(adapter, false);
             }

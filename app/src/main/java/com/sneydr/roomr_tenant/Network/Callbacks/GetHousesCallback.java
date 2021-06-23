@@ -24,7 +24,7 @@ public class GetHousesCallback extends NetworkCallback implements HousesObservab
             notifyHouses(new ArrayList<>());
         }
         else {
-            notifyFailure(response.body().string());
+            notifyFailure("House",response.body().string());
         }
         response.close();
     }

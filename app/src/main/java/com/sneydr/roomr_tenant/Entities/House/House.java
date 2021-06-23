@@ -18,34 +18,38 @@ import com.sneydr.roomr_tenant.Entities.House.Utility.Utility;
 import java.util.ArrayList;
 import java.util.List;
 
-@Entity(tableName = "house_table")
+
 public class House {
 
-    @PrimaryKey
     private int houseId;
     private int homeownerId;
-    @Embedded
+
     private RentalUnitLocation rentalUnitLocation;
-    @Embedded
+
     private RentDetails rentDetails;
 
     private List<Amenity> amenities;
 
     private List<Utility> utilities;
 
+    private String authToken;
+    private String lease;
 
-    @Ignore
-    public House(int homeownerId, RentalUnitLocation rentalUnitLocation, RentDetails rentDetails) {
-        this.homeownerId = homeownerId;
+
+
+    public House(String authToken, RentalUnitLocation rentalUnitLocation, RentDetails rentDetails) {
+        this.authToken = authToken;
+        this.lease = null;
         this.rentalUnitLocation = rentalUnitLocation;
         this.rentDetails = rentDetails;
         this.amenities = new ArrayList<>();
         this.utilities = new ArrayList<>();
     }
 
-    public House(int houseId, int homeownerId, RentalUnitLocation rentalUnitLocation, RentDetails rentDetails) {
+    public House(int houseId, String authToken, String lease, RentalUnitLocation rentalUnitLocation, RentDetails rentDetails) {
         this.houseId = houseId;
-        this.homeownerId = homeownerId;
+        this.authToken = authToken;
+        this.lease = lease;
         this.rentalUnitLocation = rentalUnitLocation;
         this.rentDetails = rentDetails;
         this.amenities = new ArrayList<>();
@@ -55,6 +59,10 @@ public class House {
 
     public RentalUnitLocation getRentalUnitLocation() {
         return rentalUnitLocation;
+    }
+
+    public String getFullAddress() {
+        return this.getRentalUnitLocation().getFormattedPrimaryAddress() + "\n" + this.getRentalUnitLocation().getFormattedSecondaryAddress();
     }
 
     public RentDetails getRentDetails() {
@@ -100,5 +108,9 @@ public class House {
 
     public void setHomeownerId(int homeownerId) {
         this.homeownerId = homeownerId;
+    }
+
+    public String getLease() {
+        return lease;
     }
 }

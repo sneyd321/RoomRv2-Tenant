@@ -4,14 +4,16 @@ import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.sneydr.roomr_tenant.App.UI.CircleTransform;
 import com.sneydr.roomr_tenant.R;
 import com.sneydr.roomr_tenant.Entities.Message.Message;
-
+import com.squareup.picasso.Picasso;
 
 
 import java.util.List;
@@ -25,6 +27,7 @@ public class MessageRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerVie
     private String userType;
     private final int TO = 0;
     private final int FROM = 1;
+    private Context context;
 
 
 
@@ -33,6 +36,7 @@ public class MessageRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerVie
         inflater = LayoutInflater.from(context);
         this.userType = userType;
         this.email = email;
+        this.context = context;
     }
 
     @Override
@@ -65,12 +69,35 @@ public class MessageRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerVie
             viewHolder.txtTimestamp.setText(message.getTimestamp());
             viewHolder.txtMessage.setText(message.getMessage());
             viewHolder.txtFullName.setText(message.getUserName());
+            if (message.getImageURL() == null) {
+                viewHolder.imgProfile.setImageResource(R.drawable.ic_baseline_account_circle_24);
+            }
+            else{
+                Picasso.get().load(message.getImageURL())
+                        .transform(new CircleTransform(context))
+                        .fit()
+                        .error(R.drawable.ic_baseline_account_circle_24)
+                        .centerCrop()
+                        .into(viewHolder.imgProfile);
+            }
         } else {
             FromMessageViewHolder viewHolder = (FromMessageViewHolder) holder;
             viewHolder.txtTimestamp.setText(message.getTimestamp());
             viewHolder.txtMessage.setText(message.getMessage());
             viewHolder.txtFullName.setText(message.getUserName());
+            if (message.getImageURL() == null) {
+                viewHolder.imgProfile.setImageResource(R.drawable.ic_baseline_account_circle_24);
+            }
+            else{
+                Picasso.get().load(message.getImageURL())
+                        .transform(new CircleTransform(context))
+                        .fit()
+                        .error(R.drawable.ic_baseline_account_circle_24)
+                        .centerCrop()
+                        .into(viewHolder.imgProfile);
+            }
         }
+
 
     }
 
@@ -94,6 +121,7 @@ public class MessageRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerVie
         private TextView txtFullName;
         private TextView txtMessage;
         private TextView txtTimestamp;
+        private ImageView imgProfile;
 
 
         public ToMessageViewHolder(@NonNull View itemView) {
@@ -101,6 +129,7 @@ public class MessageRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerVie
             txtFullName = itemView.findViewById(R.id.txtFullName);
             txtMessage = itemView.findViewById(R.id.txtMessage);
             txtTimestamp = itemView.findViewById(R.id.txtTimestamp);
+            imgProfile = itemView.findViewById(R.id.imgProfile);
         }
     }
 
@@ -108,9 +137,11 @@ public class MessageRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerVie
         private TextView txtFullName;
         private TextView txtMessage;
         private TextView txtTimestamp;
+        private ImageView imgProfile;
 
         public FromMessageViewHolder(@NonNull View itemView) {
             super(itemView);
+            imgProfile = itemView.findViewById(R.id.imgProfile);
             txtFullName = itemView.findViewById(R.id.txtFullName);
             txtMessage = itemView.findViewById(R.id.txtMessage);
             txtTimestamp = itemView.findViewById(R.id.txtTimestamp);

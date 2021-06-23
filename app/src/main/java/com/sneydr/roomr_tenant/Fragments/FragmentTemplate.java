@@ -1,6 +1,7 @@
 package com.sneydr.roomr_tenant.Fragments;
 
 import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -14,7 +15,9 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.LifecycleOwner;
 
+import com.sneydr.roomr_tenant.Activities.MainActivityTenant;
 import com.sneydr.roomr_tenant.App.Dialog.Dialog;
+import com.sneydr.roomr_tenant.App.IntentFactory;
 import com.sneydr.roomr_tenant.App.Permission;
 import com.sneydr.roomr_tenant.Network.Observers.InternetAvailableObserver;
 import com.sneydr.roomr_tenant.Network.Observers.InternetPermissionObserver;
@@ -25,17 +28,25 @@ public abstract class FragmentTemplate extends Fragment implements NetworkObserv
 
     protected Handler handler;
     protected Context context;
+    protected int houseId;
+    protected String authToken;
+    protected Permission permission;
+    protected IntentFactory intentFactory;
+
+
 
     @Override
     public void onAttach(@NonNull Context context) {
         super.onAttach(context);
         this.context = context;
+        this.permission = new Permission(context);
     }
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         handler = new Handler(Looper.getMainLooper());
+        intentFactory = new IntentFactory();
         return super.onCreateView(inflater, container, savedInstanceState);
     }
 
@@ -48,6 +59,17 @@ public abstract class FragmentTemplate extends Fragment implements NetworkObserv
             }
         });
     }
+
+    public FragmentTemplate setHouseId(int houseId) {
+        this.houseId = houseId;
+        return this;
+    }
+
+    public FragmentTemplate setAuthToken(String authToken) {
+        this.authToken = authToken;
+        return this;
+    }
+
 
     @Override
     public void onNoInternet(String text) {
@@ -63,10 +85,13 @@ public abstract class FragmentTemplate extends Fragment implements NetworkObserv
     }
 
     @Override
-    public void onFailure(String response) {
+    public void onFailure(String tag, String response) {
         handler.post(new Runnable() {
             @Override
             public void run() {
+                if (response.equals("Not Authenticated")){
+                    getActivity().onBackPressed();
+                }
                 Toast.makeText(getContext(), response, Toast.LENGTH_SHORT).show();
             }
         });

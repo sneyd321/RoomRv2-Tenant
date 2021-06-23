@@ -1,32 +1,51 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.core.widget.NestedScrollView
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:fadeScrollbars="false"
-    android:layout_marginEnd="2dp"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent">
 
-    <LinearLayout
+
+<layout xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <androidx.core.widget.NestedScrollView
+        android:fadeScrollbars="false"
+        android:layout_marginEnd="2dp"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical">
+        android:layout_height="match_parent">
 
-        <include layout="@layout/row_empty_recyclerview" />
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
 
-        <include layout="@layout/component_view_rent_details" />
+            <!--<include
+                android:id="@+id/empty"
+                layout="@layout/row_empty_recyclerview" />-->
 
-        <include layout="@layout/component_view_rental_unit_location" />
+            <include
+                android:id="@+id/tenantProfile"
+                layout="@layout/component_tenant_profile" />
 
-        <include layout="@layout/component_view_cheque_details" />
+            <include
+                android:id="@+id/viewRentDetails"
+                layout="@layout/component_view_rent_details" />
+
+            <include
+                android:id="@+id/viewChequeDetails"
+                layout="@layout/component_view_cheque_details" />
+
+            <include
+                android:id="@+id/viewLease"
+                layout="@layout/component_tenant_documents" />
+
+            <include
+                android:id="@+id/viewRentalUnitLocation"
+                layout="@layout/component_view_rental_unit_location" />
 
 
 
 
 
 
-    </LinearLayout>
+        </LinearLayout>
 
 
-</androidx.core.widget.NestedScrollView>
+    </androidx.core.widget.NestedScrollView>
+</layout>
+

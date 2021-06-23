@@ -2,12 +2,14 @@ package com.sneydr.roomr_tenant.Entities.Login;
 
 
 public class Login {
-    private String email;
-    private String password;
+    private transient String email;
+    private transient String password;
+    private int houseId;
 
-    public Login(String email, String password){
+    public Login(String email, String password, int houseId){
         this.email = email;
         this.password = password;
+        this.houseId = houseId;
     }
 
     public String getEmail() {
@@ -19,4 +21,7 @@ public class Login {
     }
 
 
+    public int getHouseId() {
+        return houseId;
+    }
 }

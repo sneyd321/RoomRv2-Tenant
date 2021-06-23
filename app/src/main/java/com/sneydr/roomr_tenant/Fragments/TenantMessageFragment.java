@@ -58,7 +58,9 @@ public class TenantMessageFragment extends FragmentTemplate implements TenantObs
         super.onCreateView(inflater, container, savedInstanceState);
         View view = inflater.inflate(R.layout.fragment_message, container, false);
         rcyMessages = view.findViewById(R.id.rcyMessages);
-        rcyMessages.setLayoutManager(new LinearLayoutManager(context));
+        LinearLayoutManager linearLayoutManager = new LinearLayoutManager(context);
+        linearLayoutManager.setStackFromEnd(true);
+        rcyMessages.setLayoutManager(linearLayoutManager);
 
         message = new MessageTextInput(view, R.id.tilMessage, R.id.edtMessage);
         message.resetError();
@@ -86,7 +88,7 @@ public class TenantMessageFragment extends FragmentTemplate implements TenantObs
         handler.post(new Runnable() {
             @Override
             public void run() {
-                factory = new MessageFactory(tenant.getEmail(), tenant.getFullName(), "Tenant", houseId);
+                factory = new MessageFactory(tenant.getEmail(), tenant.getFullName(), "Tenant", tenant.getImageURL(), houseId);
                 btnSend.setOnClickListener(onSend);
                 Message joinMessage = factory.getMessage("Join Room");
                 SocketIO socketIO = SocketIO.getInstance();

@@ -75,12 +75,13 @@ public class AddProblemsFragment extends FragmentTemplate implements ProblemObse
 
 
     @Override
-    public void onFailure(String response) {
-        super.onFailure(response);
+    public void onFailure(String tag, String response) {
+        super.onFailure(tag, response);
         handler.post(new Runnable() {
             @Override
             public void run() {
-                YoYo.with(Techniques.Shake).duration(1000).playOn(fragmentBinding.getRoot().findViewById(R.id.crdAddProblem));
+                YoYo.with(Techniques.BounceInDown).duration(1500).playOn(fragmentBinding.getRoot().findViewById(R.id.crdAddProblem));
+                fragmentBinding.btnAddProblemReportProblem.setEnabled(true);
             }
         });
 

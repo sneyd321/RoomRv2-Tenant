@@ -10,6 +10,8 @@ import com.sneydr.roomr_tenant.Entities.Users.Tenant;
 import com.sneydr.roomr_tenant.Network.Observers.NetworkObserver;
 import com.sneydr.roomr_tenant.Repositories.TenantRepository;
 
+import java.io.File;
+
 public class TenantViewModel extends AndroidViewModel {
 
     TenantRepository repository;
@@ -40,6 +42,9 @@ public class TenantViewModel extends AndroidViewModel {
         repository.loginTenant(login, observer);
     }
 
+    public void insertProfile(String authToken, File file, NetworkObserver networkObserver) {
+        repository.insertProfile(authToken, file, networkObserver);
+    }
 
 
 }

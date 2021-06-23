@@ -22,7 +22,7 @@ public class GetProblemsCallback extends NetworkCallback implements ProblemsObse
             notifyProblems(problems);
         }
         else {
-            notifyFailure(response.body().string());
+            notifyFailure("Problem",response.body().string());
         }
         response.close();
     }

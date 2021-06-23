@@ -1,5 +1,6 @@
 package com.sneydr.roomr_tenant.Entities.Message;
 
+import androidx.annotation.Nullable;
 import androidx.room.Ignore;
 
 import com.sneydr.roomr_tenant.Entities.RentDetails.CalendarHandler;
@@ -13,9 +14,11 @@ public class Message {
     private String userName;
     private int houseId;
     private String userType;
+    @Nullable
+    private String imageURL;
 
 
-    public Message(String message, String email, String userName, String userType, int houseId) {
+    public Message(String message, String email, String userName, String userType, String imageURL, int houseId) {
         this.message = message;
         CalendarHandler calendarHandler = new CalendarHandler();
         this.timestamp = calendarHandler.getNow();
@@ -23,6 +26,8 @@ public class Message {
         this.userName = userName;
         this.userType = userType;
         this.houseId = houseId;
+        this.imageURL = imageURL;
+
     }
 
     public String getUserType() {
@@ -45,6 +50,10 @@ public class Message {
         this.timestamp = timestamp;
     }
 
+    @Nullable
+    public String getImageURL() {
+        return imageURL;
+    }
 
     public int getHouseId() {
         return houseId;

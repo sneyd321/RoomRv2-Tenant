@@ -17,7 +17,7 @@ public class GetSignUpURLCallback extends NetworkCallback implements SignUpReque
             notifyObserver(response.body().string());
         }
         else {
-            notifyFailure("Failed to connect to server");
+            notifyFailure("Web","Failed to connect to server");
         }
         response.close();
     }

@@ -8,5 +8,5 @@ public interface NetworkObservable {
 
     void clearObserver();
 
-    void notifyFailure(String response);
+    void notifyFailure(String tag, String response);
 }

@@ -14,6 +14,8 @@ import com.sneydr.roomr_tenant.App.CompoundButtonInput.CompoundButtonInput;
 import com.sneydr.roomr_tenant.App.CompoundButtonInput.RadioButtonCompoundButtonInput;
 import com.sneydr.roomr_tenant.App.TextInput.NormalTextInput.EmailTextInput;
 import com.sneydr.roomr_tenant.App.TextInput.NormalTextInput.PasswordTextInput;
+import com.sneydr.roomr_tenant.App.TextInput.NumberTextInput.HouseIdNumberTextInput;
+import com.sneydr.roomr_tenant.App.TextInput.NumberTextInput.NumberTextInput;
 import com.sneydr.roomr_tenant.App.TextInput.TextInput;
 import com.sneydr.roomr_tenant.Entities.Login.Login;
 import com.sneydr.roomr_tenant.Entities.Users.Tenant;
@@ -34,11 +36,13 @@ public class LoginFragment extends FragmentTemplate implements TenantObserver {
 
 
     private TextInput email, password;
+    private NumberTextInput houseId;
 
 
     protected void initUI(View view) {
         email = new EmailTextInput(view, R.id.tilLoginEmail, R.id.edtLoginEmail);
         password = new PasswordTextInput(view, R.id.tilLoginPassword, R.id.edtLoginPassword);
+        houseId = new HouseIdNumberTextInput(view, R.id.tilLoginHouseId, R.id.edtLoginHouseId);
         Button btnLogin = view.findViewById(R.id.btnLoginLogin);
         btnLogin.setOnClickListener(onLogin);
         Button btnSignup = view.findViewById(R.id.btnLoginSignup);
@@ -59,7 +63,7 @@ public class LoginFragment extends FragmentTemplate implements TenantObserver {
     View.OnClickListener onLogin = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
-            Login login = new Login(email.getText(), password.getText());
+            Login login = new Login(email.getText(), password.getText(), houseId.getNumber());
             TenantViewModel tenantViewModel = ViewModelProviders.of(LoginFragment.this).get(TenantViewModel.class);
             tenantViewModel.login(login, LoginFragment.this);
         }
@@ -69,6 +73,7 @@ public class LoginFragment extends FragmentTemplate implements TenantObserver {
     public void onTenant(Tenant tenant) {
         Intent intent = new Intent(getActivity(), MainActivityTenant.class);
         intent.putExtra("authToken", tenant.getAuthToken());
+        intent.putExtra("houseId", tenant.getHouseId());
         startActivity(intent);
     }
 

@@ -4,6 +4,6 @@ import androidx.lifecycle.LifecycleObserver;
 
 public interface NetworkObserver extends LifecycleObserver {
 
-    void onFailure(String response);
+    void onFailure(String tag, String response);
 
 }

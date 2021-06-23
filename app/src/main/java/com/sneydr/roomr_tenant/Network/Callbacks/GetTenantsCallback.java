@@ -25,7 +25,7 @@ public class GetTenantsCallback extends NetworkCallback implements TenantsObserv
             notifyTenants(tenants);
         }
         else {
-            notifyFailure(response.body().string());
+            notifyFailure("Tenant",response.body().string());
         }
         response.close();
     }

@@ -19,6 +19,8 @@ public class Permission {
     public static final int INTERNET_PERMISSION_REQUEST_CODE = 1;
     public static final int WRITE_EXTERNAL_STORAGE_REQUEST_CODE = 2;
     public static final int CAMERA_REQUEST_CODE = 3;
+    public static final int WRITE_CALENDAR = 4;
+    public static final int READ_CALENDAR = 5;
 
 
     public Permission(Context context) {
@@ -58,6 +60,14 @@ public class Permission {
         return ContextCompat.checkSelfPermission(this.context, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED;
     }
 
+    public boolean doesHaveWriteCalendarPermission() {
+        return ContextCompat.checkSelfPermission(this.context, Manifest.permission.WRITE_CALENDAR) == PackageManager.PERMISSION_GRANTED;
+    }
+
+    public boolean doesHaveReadCalendarPermission() {
+        return ContextCompat.checkSelfPermission(this.context, Manifest.permission.READ_CALENDAR) == PackageManager.PERMISSION_GRANTED;
+    }
+
     public void requestInternetPermission() {
         if (ActivityCompat.shouldShowRequestPermissionRationale((Activity) context, Manifest.permission.INTERNET)) {
             buildAlertDialog("Internet permission", "Internet is required to access user resources.", Manifest.permission.INTERNET, INTERNET_PERMISSION_REQUEST_CODE).show();
@@ -81,5 +91,22 @@ public class Permission {
             ActivityCompat.requestPermissions((Activity) context, new String[] {Manifest.permission.CAMERA}, CAMERA_REQUEST_CODE);
         }
     }
+
+    public void requestWriteCalendarPermission() {
+        if (ActivityCompat.shouldShowRequestPermissionRationale((Activity) context, Manifest.permission.WRITE_CALENDAR)) {
+            buildAlertDialog("Calendar permission", "Calendar required for setting reminder", Manifest.permission.WRITE_CALENDAR, WRITE_CALENDAR).show();
+        } else {
+            ActivityCompat.requestPermissions((Activity) context, new String[] {Manifest.permission.WRITE_CALENDAR}, WRITE_CALENDAR);
+        }
+    }
+
+    public void requestReadCalendarPermission() {
+        if (ActivityCompat.shouldShowRequestPermissionRationale((Activity) context, Manifest.permission.READ_CALENDAR)) {
+            buildAlertDialog("Calendar permission", "Calendar required for setting reminder", Manifest.permission.READ_CALENDAR, READ_CALENDAR).show();
+        } else {
+            ActivityCompat.requestPermissions((Activity) context, new String[] {Manifest.permission.READ_CALENDAR}, READ_CALENDAR);
+        }
+    }
+
 
 }

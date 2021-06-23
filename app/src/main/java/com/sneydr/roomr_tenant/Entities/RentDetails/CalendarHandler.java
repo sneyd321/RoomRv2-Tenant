@@ -94,7 +94,6 @@ public class CalendarHandler {
 
 
     public int getDayInMonth() {
-        Calendar calendar = Calendar.getInstance();
         return calendar.get(Calendar.DAY_OF_MONTH);
     }
 
@@ -112,7 +111,6 @@ public class CalendarHandler {
     }
 
     public int getTotalDaysInMonth() {
-        Calendar calendar = Calendar.getInstance();
         switch (calendar.get(Calendar.MONTH)){
             case Calendar.APRIL:
             case Calendar.JUNE:
@@ -128,7 +126,6 @@ public class CalendarHandler {
     }
 
     public boolean isLeapYear() {
-        Calendar calendar = Calendar.getInstance();
         int year = calendar.get(Calendar.YEAR);
         return year % 4 == 0;
     }

@@ -25,13 +25,13 @@ import com.sneydr.roomr_tenant.R;
 import com.sneydr.roomr_tenant.ViewModels.TenantViewModel;
 import com.sneydr.roomr_tenant.databinding.StatePagerTenantBinding;
 
-public class TenantStatePagerFragment extends FragmentTemplate implements TenantObserver {
+public class TenantStatePagerFragment extends FragmentTemplate {
 
 
 
 
-    private FragmentStateAdapter adapter;
     private StatePagerTenantBinding binding;
+
 
 
     @Nullable
@@ -40,10 +40,24 @@ public class TenantStatePagerFragment extends FragmentTemplate implements Tenant
         super.onCreateView(inflater, container, savedInstanceState);
         binding = DataBindingUtil.inflate(inflater, R.layout.state_pager_tenant, container, false);
         Bundle bundle = getArguments();
-        if (bundle != null && bundle.containsKey("authToken")){
+        if (bundle != null && bundle.containsKey("authToken") && bundle.containsKey("houseId")){
             String authToken = bundle.getString("authToken");
-            TenantViewModel tenantViewModel = ViewModelProviders.of(this).get(TenantViewModel.class);
-            tenantViewModel.getTenant(authToken,this);
+            int houseId = bundle.getInt("houseId");
+            FragmentStateAdapter adapter = setupViewPager(authToken, houseId);
+            binding.tenantStatePager.setAdapter(adapter);
+            binding.tenantStatePager.setPageTransformer(new DepthPageTransformer());
+            new TabLayoutMediator(binding.tenantTabLayout, binding.tenantStatePager, new TabLayoutMediator.TabConfigurationStrategy() {
+                @Override
+                public void onConfigureTab(@NonNull TabLayout.Tab tab, int position) {
+                    binding.tenantStatePager.setCurrentItem(1);
+                }
+            }).attach();
+            binding.tenantTabLayout.getTabAt(1).setText("Home");
+            binding.tenantTabLayout.getTabAt(1).setIcon(getResources().getDrawable(R.drawable.ic_home_black_24dp));
+            binding.tenantTabLayout.getTabAt(0).setText("Problems");
+            binding.tenantTabLayout.getTabAt(0).setIcon(getResources().getDrawable(R.drawable.ic_build_black_24dp));
+            binding.tenantTabLayout.getTabAt(2).setText("Messages");
+            binding.tenantTabLayout.getTabAt(2).setIcon(getResources().getDrawable(R.drawable.ic_message_black_24dp));
         }
         else {
             NavHostFragment.findNavController(this).popBackStack();
@@ -51,37 +65,6 @@ public class TenantStatePagerFragment extends FragmentTemplate implements Tenant
         return binding.getRoot();
     }
 
-    @Override
-    public void onTenant(Tenant tenant) {
-        handler.post(new Runnable() {
-            @Override
-            public void run() {
-                if (tenant.isApproved()) {
-                    adapter = setupViewPager(tenant.getAuthToken(), tenant.getHouseId());
-                    binding.tenantStatePager.setAdapter(adapter);
-                    binding.tenantStatePager.setPageTransformer(new DepthPageTransformer());
-                    new TabLayoutMediator(binding.tenantTabLayout, binding.tenantStatePager, new TabLayoutMediator.TabConfigurationStrategy() {
-                        @Override
-                        public void onConfigureTab(@NonNull TabLayout.Tab tab, int position) {
-                            binding.tenantStatePager.setCurrentItem(1);
-                        }
-                    }).attach();
-                    binding.tenantTabLayout.getTabAt(1).setText("Home");
-                    binding.tenantTabLayout.getTabAt(1).setIcon(getResources().getDrawable(R.drawable.ic_home_black_24dp));
-                    binding.tenantTabLayout.getTabAt(0).setText("Problems");
-                    binding.tenantTabLayout.getTabAt(0).setIcon(getResources().getDrawable(R.drawable.ic_build_black_24dp));
-                    binding.tenantTabLayout.getTabAt(2).setText("Messages");
-                    binding.tenantTabLayout.getTabAt(2).setIcon(getResources().getDrawable(R.drawable.ic_message_black_24dp));
-                }
-                else {
-                    Toast.makeText(context, "Forbidden: Tenant Not Approved", Toast.LENGTH_LONG).show();
-                    Intent intent = new Intent(getActivity(), LoginActivity.class);
-                    startActivity(intent);
-                }
-
-            }
-        });
-    }
 
     private FragmentStateAdapter setupViewPager(String authToken, int houseId){
         ViewPager2FragmentStateAdapter adapter = new ViewPager2FragmentStateAdapter(this);
