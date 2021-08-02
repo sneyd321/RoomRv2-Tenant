@@ -29,11 +29,7 @@ import com.sneydr.roomr_tenant.databinding.FragmentCameraBinding;
 public class CameraFragment extends FragmentTemplate implements CameraObserver, View.OnClickListener {
 
     private Camera camera;
-    private String authToken;
-    private int houseId;
-    private Permission permission;
     private FragmentCameraBinding binding;
-
 
 
     @Nullable
@@ -42,25 +38,22 @@ public class CameraFragment extends FragmentTemplate implements CameraObserver, 
         super.onCreateView(inflater, container, savedInstanceState);
         binding = DataBindingUtil.inflate(inflater, R.layout.fragment_camera, container, false);
         Bundle bundle = getArguments();
-        if (bundle != null && bundle.containsKey("authToken") && bundle.containsKey("houseId")){
+        if (!permission.doesHaveCameraPermission()) {
+            permission.requestCameraPermission();
+            navigation.navigateBack(this);
+            return binding.getRoot();
+        }
+        if (bundle != null && bundle.containsKey("authToken") && bundle.containsKey("houseId") && bundle.containsKey("email")){
             authToken = bundle.getString("authToken");
             houseId = bundle.getInt("houseId");
-
-            binding.fabTakePhoto.setOnClickListener(this);
+            email = bundle.getString("email");
             camera = new Camera(binding.cameraPreview);
-
-            permission = new Permission(getContext());
-            if (permission.doesHaveCameraPermission()) {
-                camera.startCamera(getViewLifecycleOwner());
-            }
-            else {
-                permission.requestCameraPermission();
-                NavHostFragment.findNavController(this).popBackStack();
-            }
+            binding.fabTakePhoto.setOnClickListener(this);
+            camera.startCamera(getViewLifecycleOwner());
         }
         else {
-            Toast.makeText(context, "Not authenticated", Toast.LENGTH_SHORT).show();
-            NavHostFragment.findNavController(this).popBackStack();
+            Toast.makeText(context, "Not Authorized", Toast.LENGTH_LONG).show();
+            navigation.navigateBack(this);
         }
         return binding.getRoot();
     }
@@ -68,15 +61,12 @@ public class CameraFragment extends FragmentTemplate implements CameraObserver, 
 
     @Override
     public void onCameraSuccess(@NonNull ImageCapture.OutputFileResults outputFileResults) {
-        Bundle bundle = new Bundle();
-        bundle.putString("authToken", authToken);
-        bundle.putInt("houseId", houseId);
-        NavHostFragment.findNavController(this).navigate(R.id.action_cameraFragment_to_addProblemFragment, bundle);
+        navigation.navigate(this, R.id.action_cameraFragment_to_addProblemFragment, authToken, houseId, email);
     }
 
     @Override
     public void onCameraFailure(@NonNull ImageCaptureException exception) {
-        Toast.makeText(context, "Camera failed to take photo.", Toast.LENGTH_SHORT).show();
+        Toast.makeText(context, "Camera failed to take photo.", Toast.LENGTH_LONG).show();
     }
 
     @Override

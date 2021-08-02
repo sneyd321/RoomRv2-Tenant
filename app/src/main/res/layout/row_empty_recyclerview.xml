@@ -17,6 +17,8 @@
                 android:id="@+id/txtEmptyRecyclerView"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:textStyle="bold"
+                android:textColor="@color/Black"
                 android:text="Service Down"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"

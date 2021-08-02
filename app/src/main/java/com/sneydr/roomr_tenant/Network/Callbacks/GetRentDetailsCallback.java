@@ -25,26 +25,17 @@ import okhttp3.ResponseBody;
 public class GetRentDetailsCallback extends NetworkCallback implements RentDetailsObservable {
     @Override
     public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
+        ResponseBody responseBody = response.body();
+        if (responseBody == null) {
+            notifyFailure("RentDetails", "Error: Empty Response");
+            return;
+        }
         if (response.isSuccessful()){
-            ResponseBody responseBody = response.body();
-            if (responseBody != null) {
-                InputStream input = responseBody.byteStream();
-                InputStreamReader reader = new InputStreamReader(input, StandardCharsets.UTF_8);
-                RentDetails rentDetails = jsonParser.parseRentDetails(reader);
-                notifyRentDetails(rentDetails);
-            }
-            else {
-                notifyFailure("RentDetails", "Error: Empty Response");
-            }
+            RentDetails rentDetails = jsonParser.parseRentDetails(responseBody.byteStream());
+            notifyRentDetails(rentDetails);
         }
         else {
-            ResponseBody responseBody = response.body();
-            if (responseBody != null) {
-                notifyFailure("RentDetails", responseBody.string());
-            }
-            else {
-                notifyFailure("RentDetails","Error: Unknown Error Occurred");
-            }
+            notifyFailure("RentDetails", responseBody.string());
         }
     }
 

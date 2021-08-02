@@ -7,5 +7,8 @@ public class Constants {
     public static final int CONTACTS_INTENT = 3;
 
 
+    public static final String SERVER_URL = "http://192.168.100.109:8079/tenant-gateway/v1/";
+
+
 
 }

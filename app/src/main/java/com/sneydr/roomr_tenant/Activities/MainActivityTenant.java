@@ -70,7 +70,7 @@ public class MainActivityTenant extends AppCompatActivity implements ActivityObs
         setContentView(R.layout.activity_main_tenant);
 
         Bundle bundle = getIntent().getExtras();
-        if (bundle != null && bundle.containsKey("authToken") && bundle.containsKey("houseId")){
+        if (bundle != null && bundle.containsKey("authToken") && bundle.containsKey("houseId") && bundle.containsKey("email")){
             myToolbar = findViewById(R.id.toolbarTenant);
             myToolbar.setTitleTextColor(getResources().getColor(R.color.White));
             navController = Navigation.findNavController(this, R.id.nav_tenant_host_fragment);

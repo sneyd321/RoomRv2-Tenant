@@ -1,6 +1,8 @@
 package com.sneydr.roomr_tenant.Network;
 
-import com.google.gson.stream.JsonReader;
+
+
+import android.util.JsonReader;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
@@ -10,6 +12,13 @@ import com.sneydr.roomr_tenant.Entities.House.Lease;
 import com.sneydr.roomr_tenant.Entities.Login.Login;
 import com.sneydr.roomr_tenant.Entities.Message.Message;
 import com.sneydr.roomr_tenant.Entities.Problem.Problem;
+import com.sneydr.roomr_tenant.Entities.ReadJson.ReadDocumentJson;
+import com.sneydr.roomr_tenant.Entities.ReadJson.ReadHomeownerJson;
+import com.sneydr.roomr_tenant.Entities.ReadJson.ReadHouseJson;
+import com.sneydr.roomr_tenant.Entities.ReadJson.ReadJson;
+import com.sneydr.roomr_tenant.Entities.ReadJson.ReadProblemJson;
+import com.sneydr.roomr_tenant.Entities.ReadJson.ReadRentDetails;
+import com.sneydr.roomr_tenant.Entities.ReadJson.ReadTenantJson;
 import com.sneydr.roomr_tenant.Entities.RentDetails.RentDetails;
 import com.sneydr.roomr_tenant.Entities.Users.Homeowner;
 import com.sneydr.roomr_tenant.Entities.Users.Tenant;
@@ -23,6 +32,7 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.lang.reflect.Type;
 import java.net.ProtocolException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -51,16 +61,10 @@ public class JSONParser {
     }
 
 
-
     public String loginToJson(Login login) {
         return gson.toJson(login, Login.class);
     }
 
-    private JsonReader getReader(InputStreamReader inputStream) {
-        JsonReader reader = new JsonReader(inputStream);
-        reader.setLenient(true);
-        return reader;
-    }
 
 
 
@@ -81,16 +85,15 @@ public class JSONParser {
         return gson.fromJson(response, Tenant.class);
     }
 
-    public Tenant parseTenant(InputStreamReader inputStream) {
-        try {
-            JsonReader reader = getReader(inputStream);
-            Tenant tenant = gson.fromJson(reader, Tenant.class);
+    public Tenant parseTenant(InputStream inputStream) throws IOException {
+        try (JsonReader reader = new JsonReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8))) {
+            reader.beginObject();
+            ReadJson<Tenant> readJson = new ReadTenantJson(Tenant.class);
+            Tenant tenant = readJson.read(reader, new Tenant());
+            reader.endObject();
             reader.close();
             return tenant;
-        } catch (IOException e) {
-            e.printStackTrace();
         }
-        return null;
     }
 
     public List<Tenant> parseTenants(String response) {
@@ -109,16 +112,15 @@ public class JSONParser {
         return gson.fromJson(response, House.class);
     }
 
-    public House parseHouse(InputStreamReader inputStream) {
-        try {
-            JsonReader reader = getReader(inputStream);
-            House house = gson.fromJson(reader, House.class);
+    public House parseHouse(InputStream inputStream) throws IOException {
+        try (JsonReader reader = new JsonReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8))) {
+            reader.beginObject();
+            ReadJson<House> readJson = new ReadHouseJson(House.class);
+            House house = readJson.read(reader, new House());
+            reader.endObject();
             reader.close();
             return house;
-        } catch (IOException e) {
-            e.printStackTrace();
         }
-        return null;
     }
 
 
@@ -131,33 +133,36 @@ public class JSONParser {
         return gson.fromJson(response, problemType);
     }
 
-    public List<Problem> parseProblems(InputStreamReader inputStream) {
-        try {
-            JsonReader reader = getReader(inputStream);
-            Type problemType = new TypeToken<ArrayList<Problem>>(){}.getType();
-            List<Problem> problems = gson.fromJson(reader, problemType);
+    public List<Problem> parseProblems(InputStream inputStream) throws IOException {
+        try (JsonReader reader = new JsonReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8))) {
+            List<Problem> problems = new ArrayList<>();
+            reader.beginArray();
+            while (reader.hasNext()) {
+                reader.beginObject();
+                ReadJson<Problem> readJson = new ReadProblemJson(Problem.class);
+                Problem problem = readJson.read(reader, new Problem());
+                reader.endObject();
+                problems.add(problem);
+            }
+            reader.endArray();
             reader.close();
             return problems;
-        } catch (IOException e) {
-            e.printStackTrace();
         }
-        return null;
     }
 
     public Problem parseProblem(String response) {
         return gson.fromJson(response, Problem.class);
     }
 
-    public Problem parseProblem(InputStreamReader inputStream) {
-        try {
-            JsonReader reader = getReader(inputStream);
-            Problem problem = gson.fromJson(reader, Problem.class);
+    public Problem parseProblem(InputStream inputStream) throws IOException {
+        try (JsonReader reader = new JsonReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8))) {
+            reader.beginObject();
+            ReadJson<Problem> readJson = new ReadProblemJson(Problem.class);
+            Problem problem = readJson.read(reader, new Problem());
+            reader.endObject();
             reader.close();
             return problem;
-        } catch (IOException e) {
-            e.printStackTrace();
         }
-        return null;
     }
 
 
@@ -180,17 +185,21 @@ public class JSONParser {
         return gson.fromJson(response, documentType);
     }
 
-    public List<Document> parseDocuments(InputStreamReader inputStream) {
-        try {
-            JsonReader reader = getReader(inputStream);
-            Type documentType = new TypeToken<ArrayList<Document>>(){}.getType();
-            List<Document> documents = gson.fromJson(reader, documentType);
+    public List<Document> parseDocuments(InputStream inputStream) throws IOException {
+        try (JsonReader reader = new JsonReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8))) {
+            List<Document> documents = new ArrayList<>();
+            reader.beginArray();
+            while (reader.hasNext()) {
+                reader.beginObject();
+                ReadJson<Document> readJson = new ReadDocumentJson(Document.class);
+                Document document = readJson.read(reader, new Document());
+                reader.endObject();
+                documents.add(document);
+            }
+            reader.endArray();
             reader.close();
             return documents;
-        } catch (IOException e) {
-            e.printStackTrace();
         }
-        return null;
 
     }
 
@@ -198,16 +207,15 @@ public class JSONParser {
         return gson.fromJson(response, RentDetails.class);
     }
 
-    public RentDetails parseRentDetails(InputStreamReader inputStream) {
-        try {
-            JsonReader reader = getReader(inputStream);
-            RentDetails rentDetails = gson.fromJson(reader, RentDetails.class);
+    public RentDetails parseRentDetails(InputStream inputStream) throws IOException {
+        try (JsonReader reader = new JsonReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8))) {
+            ReadJson<RentDetails> readJson = new ReadRentDetails(RentDetails.class);
+            reader.beginObject();
+            RentDetails rentDetails = readJson.read(reader, new RentDetails());
+            reader.endObject();
             reader.close();
             return rentDetails;
-        } catch (IOException e) {
-            e.printStackTrace();
         }
-        return null;
     }
 
 
@@ -215,19 +223,15 @@ public class JSONParser {
         return gson.fromJson(response, Homeowner.class);
     }
 
-    public Homeowner parseHomeowner(InputStreamReader inputStream) {
-        try {
-            JsonReader reader = getReader(inputStream);
-            Homeowner homeowner = gson.fromJson(reader, Homeowner.class);
+    public Homeowner parseHomeowner(InputStream inputStream) throws IOException {
+        try (JsonReader reader = new JsonReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8))) {
+            ReadJson<Homeowner> readJson = new ReadHomeownerJson(Homeowner.class);
+            reader.beginObject();
+            Homeowner homeowner = readJson.read(reader, new Homeowner());
+            reader.endObject();
             reader.close();
             return homeowner;
-
-        } catch (IOException e) {
-            e.printStackTrace();
         }
-
-
-        return null;
     }
 
 

@@ -28,7 +28,7 @@ public class Network {
 
 
     //private final String SERVER_URL = "http://34.107.132.144/tenant-gateway/v1/";
-    private final String SERVER_URL = "http://192.168.0.108:8079/tenant-gateway/v1/";
+    private final String SERVER_URL = "http://192.168.100.109:8079/tenant-gateway/v1/";
     private final MediaType JSON = MediaType.parse("application/json; charset=utf-8");
     private final MediaType JPG = MediaType.parse("image/jpg");
     private OkHttpClient client;

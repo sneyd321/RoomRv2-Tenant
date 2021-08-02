@@ -22,27 +22,19 @@ public class GetTenantCallback extends NetworkCallback implements TenantObservab
 
     @Override
     public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
+        ResponseBody responseBody = response.body();
+        if (responseBody == null) {
+            notifyFailure("Tenant", "Error: Empty Response");
+            return;
+        }
         if (response.isSuccessful()){
-            ResponseBody responseBody = response.body();
-            if (responseBody != null) {
-                InputStream input = responseBody.byteStream();
-                InputStreamReader reader = new InputStreamReader(input, StandardCharsets.UTF_8);
-                Tenant tenant = jsonParser.parseTenant(reader);
-                notifyTenant(tenant);
-            }
-            else {
-                notifyFailure("Tenant", "Error: Empty Response");
-            }
+            Tenant tenant = jsonParser.parseTenant(responseBody.byteStream());
+            notifyTenant(tenant);
         }
         else {
-            ResponseBody responseBody = response.body();
-            if (responseBody != null) {
-                notifyFailure("Tenant", responseBody.string());
-            }
-            else {
-                notifyFailure("Tenant","Error: Unknown Error Occurred");
-            }
+            notifyFailure("Tenant", responseBody.string());
         }
+        response.close();
     }
 
     @Override

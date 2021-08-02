@@ -21,13 +21,15 @@
         android:theme="@style/AppTheme.NoActionBar">
 
         <uses-library android:name="android.test.runner" android:required="false" />
-
+        <service android:name=".Services.NotificationService"
+            android:permission="android.permission.BIND_JOB_SERVICE"/>
 
         <activity
             android:name=".Activities.MainActivityTenant"
             android:theme="@style/AppTheme.NoActionBar"
-            android:windowSoftInputMode="adjustPan">
+            android:windowSoftInputMode="adjustResize">
         </activity>
+
         <activity android:name=".Activities.LoginActivity"
             android:windowSoftInputMode="adjustResize">
             <intent-filter>

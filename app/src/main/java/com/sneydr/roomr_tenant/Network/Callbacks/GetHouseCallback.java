@@ -24,27 +24,20 @@ public class GetHouseCallback extends NetworkCallback implements HouseObservable
 
     @Override
     public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
+        ResponseBody responseBody = response.body();
+        if (responseBody == null) {
+            notifyFailure("House", "Error: Empty Response");
+            return;
+        }
         if (response.isSuccessful()){
-            ResponseBody responseBody = response.body();
-            if (responseBody != null) {
-                InputStream input = responseBody.byteStream();
-                InputStreamReader reader = new InputStreamReader(input, StandardCharsets.UTF_8);
-                House house = jsonParser.parseHouse(reader);
-                notifyHouse(house);
-            }
-            else {
-                notifyFailure("House", "Error: Empty Response");
-            }
+            House house = jsonParser.parseHouse(responseBody.byteStream());
+            notifyHouse(house);
+
         }
         else {
-            ResponseBody responseBody = response.body();
-            if (responseBody != null) {
-                notifyFailure("House", responseBody.string());
-            }
-            else {
-                notifyFailure("House","Error: Unknown Error Occurred");
-            }
+            notifyFailure("House", responseBody.string());
         }
+        response.close();
     }
 
     @Override

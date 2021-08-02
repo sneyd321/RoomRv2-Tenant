@@ -27,26 +27,17 @@ public class GetHomeownerCallback extends NetworkCallback implements HomeownerOb
 
     @Override
     public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
+        ResponseBody responseBody = response.body();
+        if (responseBody == null) {
+            notifyFailure("Homeowner", "Error: Empty Response");
+            return;
+        }
         if (response.isSuccessful()){
-            ResponseBody responseBody = response.body();
-            if (responseBody != null) {
-                InputStream input = responseBody.byteStream();
-                InputStreamReader reader = new InputStreamReader(input, StandardCharsets.UTF_8);
-                Homeowner homeowner = jsonParser.parseHomeowner(reader);
-                notifyHomeowner(homeowner);
-            }
-            else {
-                notifyFailure("Homeowner", "Error: Empty Response");
-            }
+            Homeowner homeowner = jsonParser.parseHomeowner(responseBody.byteStream());
+            notifyHomeowner(homeowner);
         }
         else {
-            ResponseBody responseBody = response.body();
-            if (responseBody != null) {
-                notifyFailure("Homeowner", responseBody.string());
-            }
-            else {
-                notifyFailure("Homeowner","Error: Unknown Error Occurred");
-            }
+            notifyFailure("Homeowner", responseBody.string());
         }
         response.close();
     }

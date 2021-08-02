@@ -13,6 +13,7 @@ import androidx.lifecycle.Lifecycle;
 import androidx.lifecycle.OnLifecycleEvent;
 import androidx.lifecycle.ViewModelProviders;
 import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 
 import android.view.LayoutInflater;
@@ -24,6 +25,9 @@ import android.widget.Toast;
 import com.sneydr.roomr_tenant.Activities.MainActivityTenant;
 import com.sneydr.roomr_tenant.Adapters.Listeners.ItemClickListener;
 import com.sneydr.roomr_tenant.Adapters.TenantDocumentRecyclerViewAdapter;
+import com.sneydr.roomr_tenant.App.Button.AddPhotoButton;
+import com.sneydr.roomr_tenant.App.Button.OpenCalendarButton;
+import com.sneydr.roomr_tenant.App.Button.SaveClipboardButton;
 import com.sneydr.roomr_tenant.App.UI.CircleTransform;
 import com.sneydr.roomr_tenant.App.Constants;
 import com.sneydr.roomr_tenant.App.UI.CircularProgressBarAnimation;
@@ -46,24 +50,20 @@ import com.sneydr.roomr_tenant.ViewModels.RentDetailsViewModel;
 import com.sneydr.roomr_tenant.ViewModels.TenantViewModel;
 import com.sneydr.roomr_tenant.databinding.FragmentTenantLandingPageBinding;
 import com.squareup.picasso.MemoryPolicy;
+import com.squareup.picasso.NetworkPolicy;
 import com.squareup.picasso.Picasso;
 
 import java.io.File;
 import java.util.List;
 
 
-public class TenantLandingFragment extends FragmentTemplate implements ItemClickListener, HouseObserver, RentDetailsObserver, DocumentsObserver, TenantObserver, ActivityObserver, HomeownerObserver {
+public class TenantLandingFragment extends FragmentTemplate implements ItemClickListener, HouseObserver, RentDetailsObserver, DocumentsObserver, TenantObserver, ActivityObserver, HomeownerObserver, SwipeRefreshLayout.OnRefreshListener {
 
 
 
 
     private FragmentTenantLandingPageBinding binding;
     private TenantDocumentRecyclerViewAdapter adapter;
-    private RentDetailsViewModel rentDetailsViewModel;
-    private HouseViewModel houseViewModel;
-    private DocumentViewModel documentViewModel;
-    private TenantViewModel tenantViewModel;
-    private HomeownerViewModel homeownerViewModel;
 
 
     @Nullable
@@ -71,27 +71,28 @@ public class TenantLandingFragment extends FragmentTemplate implements ItemClick
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         super.onCreateView(inflater, container, savedInstanceState);
         binding = DataBindingUtil.inflate(inflater, R.layout.fragment_tenant_landing_page, container, false);
-
-        rentDetailsViewModel = ViewModelProviders.of(this).get(RentDetailsViewModel.class);
-        houseViewModel = ViewModelProviders.of(this).get(HouseViewModel.class);
-        documentViewModel = ViewModelProviders.of(this).get(DocumentViewModel.class);
-        tenantViewModel = ViewModelProviders.of(this).get(TenantViewModel.class);
-        homeownerViewModel = ViewModelProviders.of(this).get(HomeownerViewModel.class);
-        rentDetailsViewModel.getRentDetails(houseId, authToken, this);
-        houseViewModel.getHouse(houseId, authToken,this);
-        documentViewModel.getDocuments(houseId, authToken, this);
-        homeownerViewModel.loadHomeowner(authToken, houseId, this);
+        binding.swrTenantLanding.setOnRefreshListener(this);
+        binding.viewLease.rcyTenantDocuments.setLayoutManager(new LinearLayoutManager(context));
+        binding.tenantProfile.btnViewLease.setOnClickListener(new AddPhotoButton(getActivity(), TenantLandingFragment.this));
+        binding.viewRentalUnitLocation.crdRentalUnitLocation.setVisibility(View.GONE);
+        binding.viewLease.rcyTenantDocuments.setVisibility(View.GONE);
+        binding.viewChequeDetails.crdChequeDetail.setVisibility(View.GONE);
+        binding.viewRentalUnitLocation.crdRentalUnitLocation.setVisibility(View.GONE);
+        ViewModelProviders.of(this).get(RentDetailsViewModel.class).getRentDetails(houseId, authToken, this);
+        ViewModelProviders.of(this).get(HouseViewModel.class).getHouse(houseId, authToken, this);
+        ViewModelProviders.of(this).get(DocumentViewModel.class).getDocuments(houseId, authToken, this);
+        ViewModelProviders.of(this).get(HomeownerViewModel.class).loadHomeowner(authToken, houseId, this);
+        ViewModelProviders.of(this).get(TenantViewModel.class).getTenant(authToken, this);
         return binding.getRoot();
     }
 
+
+
     @Override
-    public void onResume() {
-        super.onResume();
-
-        tenantViewModel.getTenant(authToken, this);
-
+    public void onPause() {
+        super.onPause();
+        binding.swrTenantLanding.setRefreshing(false);
     }
-
 
     @OnLifecycleEvent(Lifecycle.Event.ON_RESUME)
     @Override
@@ -99,26 +100,19 @@ public class TenantLandingFragment extends FragmentTemplate implements ItemClick
         handler.post(new Runnable() {
             @Override
             public void run() {
-                if (house != null) {
-                    binding.viewRentalUnitLocation.crdRentalUnitLocation.setVisibility(View.VISIBLE);
-                    binding.viewRentalUnitLocation.txtTenantLandingAddress.setText(house.getFullAddress());
-                    binding.viewRentalUnitLocation.btnViewLease.setOnClickListener(new View.OnClickListener() {
-                        @RequiresApi(api = Build.VERSION_CODES.M)
-                        @Override
-                        public void onClick(View view) {
-                            ClipboardManager cm = (ClipboardManager)context.getSystemService(Context.CLIPBOARD_SERVICE);
-                            cm.setText(house.getFullAddress());
-                            Toast.makeText(context, "Copied to clipboard", Toast.LENGTH_SHORT).show();
-                        }
-                    });
-                }
-                else {
-                    binding.viewRentalUnitLocation.crdRentalUnitLocation.setVisibility(View.GONE);
-                }
+                binding.viewRentalUnitLocation.crdRentalUnitLocation.setVisibility(View.VISIBLE);
+                binding.swrTenantLanding.setRefreshing(false);
+                binding.viewRentalUnitLocation.txtTenantLandingAddress.setText(house.getFullAddress());
+                binding.viewRentalUnitLocation.btnViewLease.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        ClipboardManager cm = (ClipboardManager) context.getSystemService(Context.CLIPBOARD_SERVICE);
+                        cm.setText(house.getFullAddress());
+                        Toast.makeText(context, "Copied to clipboard", Toast.LENGTH_LONG).show();
+                    }
+                });
             }
         });
-
-
     }
 
 
@@ -129,41 +123,70 @@ public class TenantLandingFragment extends FragmentTemplate implements ItemClick
         handler.post(new Runnable() {
             @Override
             public void run() {
-                if (rentDetails != null) {
-                    binding.viewRentDetails.crdRentDetails.setVisibility(View.VISIBLE);
-                    Animation anim = new CircularProgressBarAnimation(binding.viewRentDetails.circularProgressBar, 0, rentDetails.getDayInMonth(), rentDetails.getTotalDaysInMonth());
-                    anim.setDuration(1500);
-                    binding.viewRentDetails.circularProgressBar.startAnimation(anim);
-                    binding.viewRentDetails.txtDaysLeft.setText(rentDetails.getFormattedDaysLeft());
-                    binding.viewRentDetails.txtAmountDue.setText(rentDetails.getTotalRent());
-                    binding.viewRentDetails.txtTenantRentDueDate.setText(rentDetails.getFormattedDueDate());
+                binding.viewRentDetails.crdRentDetails.setVisibility(View.VISIBLE);
+                Animation anim = new CircularProgressBarAnimation(binding.viewRentDetails.circularProgressBar, 0, rentDetails.getDayInMonth(), rentDetails.getTotalDaysInMonth());
+                anim.setDuration(1500);
+                binding.viewRentDetails.circularProgressBar.startAnimation(anim);
+                binding.viewRentDetails.txtDaysLeft.setText(rentDetails.getFormattedDaysLeft());
+                binding.viewRentDetails.txtAmountDue.setText(rentDetails.getTotalRent());
+                binding.viewRentDetails.txtTenantRentDueDate.setText(rentDetails.getFormattedDueDate());
 
-                    binding.viewRentDetails.btnPayRent.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View v) {
-                            if (!permission.doesHaveWriteCalendarPermission()) {
-                                permission.requestWriteCalendarPermission();
-                                return;
-                            }
-                            if (!permission.doesHaveReadCalendarPermission()) {
-                                permission.requestReadCalendarPermission();
-                                return;
-                            }
-                            Intent intent = intentFactory.getCalendarIntent();
-                            if(intent.resolveActivity(context.getPackageManager()) != null) {
-                                startActivity(intent);
-                            }
-                            else {
-                                Toast.makeText(context, "Please download a calendar app", Toast.LENGTH_SHORT).show();
-                            }
+                binding.viewRentDetails.btnPayRent.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        if (!permission.doesHaveWriteCalendarPermission()) {
+                            permission.requestWriteCalendarPermission();
+                            return;
                         }
-                    });
+                        if (!permission.doesHaveReadCalendarPermission()) {
+                            permission.requestReadCalendarPermission();
+                            return;
+                        }
+                        Intent intent = intentFactory.getCalendarIntent();
+                        if(intent.resolveActivity(context.getPackageManager()) != null) {
+                            startActivity(intent);
+                        }
+                        else {
+                            Toast.makeText(context, "Please download a calendar app", Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                });
+            }
+        });
+    }
+
+    @Override
+    public void onFailure(String tag, String response) {
+        handler.post(new Runnable() {
+            @Override
+            public void run() {
+                binding.swrTenantLanding.setRefreshing(false);
+                if (response.equals("Not Authorized")){
+                    binding.viewRentalUnitLocation.crdRentalUnitLocation.setVisibility(View.GONE);
+                    binding.viewRentDetails.crdRentDetails.setVisibility(View.GONE);
+                    binding.viewLease.rcyTenantDocuments.setVisibility(View.GONE);
+                    binding.viewChequeDetails.crdChequeDetail.setVisibility(View.GONE);
                 }
-                else {
+                if (tag.equals("House") && response.equals("Error: House Service Currently Unavailable") || response.equals("Error: Service currently unavailable.")) {
+                    binding.viewRentalUnitLocation.crdRentalUnitLocation.setVisibility(View.GONE);
+                }
+
+                if (tag.equals("Documents") && response.equals("Error: Document Service Currently Unavailable") || response.equals("Error: Service currently unavailable.")) {
+                    binding.viewLease.rcyTenantDocuments.setVisibility(View.GONE);
+                }
+                if (tag.equals("Tenant") && response.equals("Error: Tenant Service Currently Unavailable") || response.equals("Error: Service currently unavailable.")) {
+                    navigation.navigateBack(TenantLandingFragment.this);
+                    navigation.navigateBack(TenantLandingFragment.this);
+                    Toast.makeText(context, response, Toast.LENGTH_LONG).show();
+                }
+                if (tag.equals("Homeowner") && response.equals("Error: Homeowner Service Currently Unavailable") || response.equals("Error: House Service Currently Unavailable") || response.equals("Error: Service currently unavailable.")) {
+                    binding.viewChequeDetails.crdChequeDetail.setVisibility(View.GONE);
+                }
+                if (tag.equals("RentDetails") && response.equals("Error: Rent Service Currently Unavailable") || response.equals("Error: Service currently unavailable.")) {
                     binding.viewRentDetails.crdRentDetails.setVisibility(View.GONE);
                 }
 
-
+                Toast.makeText(context, response, Toast.LENGTH_LONG).show();
             }
         });
     }
@@ -174,17 +197,12 @@ public class TenantLandingFragment extends FragmentTemplate implements ItemClick
         handler.post(new Runnable() {
             @Override
             public void run() {
-                if (documents != null) {
-                    binding.viewLease.rcyTenantDocuments.setVisibility(View.VISIBLE);
-                    adapter = new TenantDocumentRecyclerViewAdapter(documents);
-                    binding.viewLease.rcyTenantDocuments.setLayoutManager(new LinearLayoutManager(context));
-                    adapter.setItemClickListener(TenantLandingFragment.this);
-                    binding.viewLease.rcyTenantDocuments.setAdapter(adapter);
-                }
-                else {
-                    binding.viewLease.rcyTenantDocuments.setVisibility(View.GONE);
-                }
+                binding.viewLease.rcyTenantDocuments.setVisibility(View.VISIBLE);
+                binding.swrTenantLanding.setRefreshing(false);
+                adapter = new TenantDocumentRecyclerViewAdapter(documents);
 
+                adapter.setItemClickListener(TenantLandingFragment.this);
+                binding.viewLease.rcyTenantDocuments.setAdapter(adapter);
             }
         });
     }
@@ -194,12 +212,14 @@ public class TenantLandingFragment extends FragmentTemplate implements ItemClick
     public void onItemClick(View view, int position) {
         if (!permission.doesHaveWritePermission()) {
             permission.requestWriteExternalStoragePermission();
+            return;
         }
-        else {
-            Document document = adapter.getItemAtPosition(position);
-            Intent intent = intentFactory.getDocumentIntent(document);
-            getActivity().startActivityForResult(intent, Constants.DOCUMENT_INTENT);
-        }
+        Document document = adapter.getItemAtPosition(position);
+        Intent intent = intentFactory.getDocumentIntent(document);
+        MainActivityTenant mainActivityTenant = (MainActivityTenant) getActivity();
+        if (mainActivityTenant != null)
+            mainActivityTenant.startActivityForResult(intent, Constants.DOCUMENT_INTENT);
+
     }
 
     @OnLifecycleEvent(Lifecycle.Event.ON_RESUME)
@@ -208,38 +228,21 @@ public class TenantLandingFragment extends FragmentTemplate implements ItemClick
         handler.post(new Runnable() {
             @Override
             public void run() {
-                if (tenant != null){
-
-
-
-                    binding.tenantProfile.crdTenantProfile.setVisibility(View.VISIBLE);
-                    Picasso.get().load(tenant.getImageURL())
-                            .transform(new CircleTransform(context))
-                            .fit()
-                            .error(R.drawable.ic_baseline_account_circle_24)
-                            .memoryPolicy(MemoryPolicy.NO_CACHE, MemoryPolicy.NO_STORE)
-                            .centerCrop()
-                            .into(binding.tenantProfile.imageView2);
-
-
-                    binding.tenantProfile.textView3.setText(tenant.getFullName());
-                    binding.tenantProfile.btnViewLease.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View view) {
-                            if (tenant.getImageURL() != null) {
-                                Toast.makeText(context, "Update profile not implemented for beta release.", Toast.LENGTH_LONG).show();
-                                return;
-                            }
-                            ((MainActivityTenant)getActivity()).registerObserver(TenantLandingFragment.this);
-                            Intent intent = intentFactory.getGalleryIntent();
-                            getActivity().startActivityForResult(intent, Constants.IMAGE_INTENT);
-                        }
-                    });
+                binding.tenantProfile.crdTenantProfile.setVisibility(View.VISIBLE);
+                binding.swrTenantLanding.setRefreshing(false);
+                if (tenant.getImageURL() == null || tenant.getImageURL().isEmpty()) {
+                    binding.tenantProfile.imageView2.setImageResource(R.drawable.ic_baseline_account_circle_24);
                 }
                 else {
-                    binding.tenantProfile.crdTenantProfile.setVisibility(View.GONE);
+                    Picasso.get().load(tenant.getImageURL())
+                            .transform(new CircleTransform(binding.getRoot().getContext())).fit()
+                            .memoryPolicy(MemoryPolicy.NO_CACHE, MemoryPolicy.NO_STORE)
+                            .networkPolicy(NetworkPolicy.NO_CACHE, NetworkPolicy.NO_STORE)
+                            .error(R.drawable.ic_baseline_account_circle_24)
+                            .centerCrop()
+                            .into(binding.tenantProfile.imageView2);
                 }
-
+                binding.tenantProfile.textView3.setText(tenant.getFullName());
             }
         });
     }
@@ -249,8 +252,8 @@ public class TenantLandingFragment extends FragmentTemplate implements ItemClick
         handler.post(new Runnable() {
             @Override
             public void run() {
-                tenantViewModel.insertProfile(authToken, file, TenantLandingFragment.this);
-                Toast.makeText(context, "Image updating, please refresh in 5-10 seconds", Toast.LENGTH_SHORT).show();
+                ViewModelProviders.of(TenantLandingFragment.this).get(TenantViewModel.class).insertProfile(authToken, file, TenantLandingFragment.this);
+                scheduleJob(email, "ProfilePicture");
             }
         });
     }
@@ -261,21 +264,27 @@ public class TenantLandingFragment extends FragmentTemplate implements ItemClick
         handler.post(new Runnable() {
             @Override
             public void run() {
-                if (homeowner != null){
-                    binding.viewChequeDetails.crdChequeDetail.setVisibility(View.VISIBLE);
-                    binding.viewChequeDetails.txtHomeownerName.setText(homeowner.getFullName());
-                    binding.viewChequeDetails.btnViewLease.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View view) {
-                            Intent intent = intentFactory.getContactsIntent(homeowner);
-                            startActivity(intent);
-                        }
-                    });
-                }
-                else {
-                    binding.viewChequeDetails.crdChequeDetail.setVisibility(View.GONE);
-                }
+                binding.swrTenantLanding.setRefreshing(false);
+                binding.viewChequeDetails.crdChequeDetail.setVisibility(View.VISIBLE);
+                binding.viewChequeDetails.txtHomeownerName.setText(homeowner.getFullName());
+                binding.viewChequeDetails.btnViewLease.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        Intent intent = intentFactory.getContactsIntent(homeowner);
+                        startActivity(intent);
+                    }
+                });
             }
+
         });
+    }
+
+    @Override
+    public void onRefresh() {
+        ViewModelProviders.of(this).get(RentDetailsViewModel.class).getRentDetails(houseId, authToken, this);
+        ViewModelProviders.of(this).get(HouseViewModel.class).getHouse(houseId, authToken, this);
+        ViewModelProviders.of(this).get(DocumentViewModel.class).getDocuments(houseId, authToken, this);
+        ViewModelProviders.of(this).get(HomeownerViewModel.class).loadHomeowner(authToken, houseId, this);
+        ViewModelProviders.of(this).get(TenantViewModel.class).getTenant(authToken, this);
     }
 }

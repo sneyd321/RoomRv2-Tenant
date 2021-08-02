@@ -16,6 +16,7 @@ import androidx.lifecycle.ViewModelProviders;
 import androidx.navigation.fragment.NavHostFragment;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.sneydr.roomr_tenant.Adapters.ProblemsRecyclerViewAdapter;
@@ -34,9 +35,6 @@ public class TenantProblemsFragment extends FragmentTemplate implements Problems
 
 
     private ProblemsRecyclerViewAdapter adapter;
-    private int houseId;
-    private String authToken;
-    private ProblemViewModel problemViewModel;
     private FragmentTenantProblemBinding binding;
 
 
@@ -47,8 +45,7 @@ public class TenantProblemsFragment extends FragmentTemplate implements Problems
         binding = DataBindingUtil.inflate(inflater, R.layout.fragment_tenant_problem, container, false);
         binding.swrTenantProblems.setOnRefreshListener(this);
         binding.fabAddProblem.setOnClickListener(this);
-        binding.rcyTenantProblems.setLayoutManager(new LinearLayoutManager(getActivity()));
-
+        binding.rcyTenantProblems.setLayoutManager(new LinearLayoutManager(context));
         return binding.getRoot();
     }
 
@@ -56,21 +53,26 @@ public class TenantProblemsFragment extends FragmentTemplate implements Problems
     @Override
     public void onResume() {
         super.onResume();
-        problemViewModel = ViewModelProviders.of(this).get(ProblemViewModel.class);
-        problemViewModel.loadProblems(houseId, authToken, this);
+        ViewModelProviders.of(this).get(ProblemViewModel.class).loadProblems(houseId, authToken, this);
     }
 
     @Override
     public void onPause() {
         super.onPause();
-        adapter = new ProblemsRecyclerViewAdapter(new ArrayList<>());
-        binding.rcyTenantProblems.setAdapter(adapter);
+        binding.swrTenantProblems.setRefreshing(false);
     }
 
     @Override
     public void onFailure(String tag, String response) {
         super.onFailure(tag, response);
-        binding.swrTenantProblems.setRefreshing(false);
+        handler.post(new Runnable() {
+            @Override
+            public void run() {
+                ProblemsRecyclerViewAdapter adapter = new ProblemsRecyclerViewAdapter(new ArrayList<>());
+                binding.rcyTenantProblems.setAdapter(adapter);
+                binding.swrTenantProblems.setRefreshing(false);
+            }
+        });
     }
 
     @OnLifecycleEvent(Lifecycle.Event.ON_RESUME)
@@ -79,47 +81,27 @@ public class TenantProblemsFragment extends FragmentTemplate implements Problems
         handler.post(new Runnable() {
             @Override
             public void run() {
-                if (binding.swrTenantProblems.isRefreshing()){
-                    binding.swrTenantProblems.setRefreshing(false);
-                }
-                if (problems.isEmpty()){
-                    binding.rcyTenantProblems.setLayoutManager(new LinearLayoutManager(getActivity()));
-                }
-                else {
-                    GridLayoutManager gridLayoutManager = new GridLayoutManager(context, 2);
-                    binding.rcyTenantProblems.setLayoutManager(gridLayoutManager);
-                }
+                binding.swrTenantProblems.setRefreshing(false);
+                RecyclerView.LayoutManager layoutManager = problems.isEmpty() ? new LinearLayoutManager(context) : new GridLayoutManager(context, 2);
+
+                binding.rcyTenantProblems.setLayoutManager(layoutManager);
                 LayoutAnimationController animation = AnimationUtils.loadLayoutAnimation(context, R.anim.layout_animation_fall_down);
                 binding.rcyTenantProblems.setLayoutAnimation(animation);
-                Collections.reverse(problems);
-                adapter = new ProblemsRecyclerViewAdapter(problems);
-                binding.rcyTenantProblems.swapAdapter(adapter, false);
+                List<Problem> listToReverse = problems;
+                Collections.reverse(listToReverse);
+                adapter = new ProblemsRecyclerViewAdapter(listToReverse);
+                binding.rcyTenantProblems.setAdapter(adapter);
             }
         });
     }
 
-
-    public TenantProblemsFragment setAuthToken(String authToken) {
-        this.authToken = authToken;
-        return this;
-    }
-
-    public TenantProblemsFragment setHouseId(int id) {
-        this.houseId = id;
-        return this;
-    }
-
     @Override
     public void onRefresh() {
-        problemViewModel.loadProblems(houseId, authToken, this);
+        ViewModelProviders.of(this).get(ProblemViewModel.class).loadProblems(houseId, authToken, this);
     }
 
     @Override
     public void onClick(View v) {
-        Bundle bundle = new Bundle();
-        bundle.putString("authToken", authToken);
-        bundle.putInt("houseId", houseId);
-        NavHostFragment.findNavController(this)
-                .navigate(R.id.action_tenantStatePagerFragment_to_cameraFragment, bundle);
+        navigation.navigate(this, R.id.action_tenantStatePagerFragment_to_cameraFragment, authToken, houseId, email);
     }
 }

@@ -23,26 +23,17 @@ import okhttp3.ResponseBody;
 public class GetDocumentsCallback extends NetworkCallback implements DocumentsObservable {
     @Override
     public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
+        ResponseBody responseBody = response.body();
+        if (responseBody == null) {
+            notifyFailure("Documents", "Error: Empty Response");
+            return;
+        }
         if (response.isSuccessful()){
-            ResponseBody responseBody = response.body();
-            if (responseBody != null) {
-                InputStream input = responseBody.byteStream();
-                InputStreamReader reader = new InputStreamReader(input, StandardCharsets.UTF_8);
-                List<Document> documents = jsonParser.parseDocuments(reader);
-                notifyDocuments(documents);
-            }
-            else {
-                notifyFailure("Document", "Error: Empty Response");
-            }
+            List<Document> documents = jsonParser.parseDocuments(responseBody.byteStream());
+            notifyDocuments(documents);
         }
         else {
-            ResponseBody responseBody = response.body();
-            if (responseBody != null) {
-                notifyFailure("Document", responseBody.string());
-            }
-            else {
-                notifyFailure("Document","Error: Unknown Error Occurred");
-            }
+            notifyFailure("Documents", responseBody.string());
         }
         response.close();
     }

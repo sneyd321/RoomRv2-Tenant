@@ -38,7 +38,6 @@ public class AddProblemsFragment extends FragmentTemplate implements ProblemObse
     TextInput description;
     private int houseId;
     private String authToken;
-    private ProblemViewModel problemViewModel;
     private FragmentAddProblemBinding fragmentBinding;
 
 
@@ -48,22 +47,24 @@ public class AddProblemsFragment extends FragmentTemplate implements ProblemObse
         super.onCreateView(inflater, container, savedInstanceState);
         fragmentBinding = DataBindingUtil.inflate(inflater, R.layout.fragment_add_problem, container, false);
         Bundle bundle = getArguments();
-        if (bundle != null && bundle.containsKey("authToken") && bundle.containsKey("houseId")){
+
+        if (bundle != null && bundle.containsKey("authToken") && bundle.containsKey("houseId") && bundle.containsKey("email")){
             authToken = bundle.getString("authToken");
             houseId = bundle.getInt("houseId");
+            email = bundle.getString("email");
             fragmentBinding.btnAddProblemReportProblem.setEnabled(true);
-            problemViewModel = ViewModelProviders.of(this).get(ProblemViewModel.class);
+            fragmentBinding.btnAddProblemReportProblem.setOnClickListener(this);
             problemType = new RadioButtonCompoundButtonInput(fragmentBinding.getRoot(), 0 , R.id.rdgProblemType);
             description = new DescriptionTextInput(fragmentBinding.getRoot(), R.id.tilAddProblemDescription, R.id.edtAddProblemDescription);
-            fragmentBinding.btnAddProblemReportProblem.setOnClickListener(this);
+
             File file = new File(context.getCacheDir(), "Problem.jpg");
-            ImageView imgProblem = fragmentBinding.getRoot().findViewById(R.id.imgProblem);
-            Picasso.get().load(file).memoryPolicy(MemoryPolicy.NO_CACHE, MemoryPolicy.NO_STORE).into(imgProblem);
+            Picasso.get().load(file)
+                    .memoryPolicy(MemoryPolicy.NO_CACHE, MemoryPolicy.NO_STORE)
+                    .into(fragmentBinding.addProblemForm.imgProblem);
 
         }
         else {
-            Toast.makeText(context, "Not Authenticated", Toast.LENGTH_SHORT).show();
-            NavHostFragment.findNavController(this).popBackStack();
+            navigation.navigateBack(this);
         }
         return fragmentBinding.getRoot();
     }
@@ -80,7 +81,7 @@ public class AddProblemsFragment extends FragmentTemplate implements ProblemObse
         handler.post(new Runnable() {
             @Override
             public void run() {
-                YoYo.with(Techniques.BounceInDown).duration(1500).playOn(fragmentBinding.getRoot().findViewById(R.id.crdAddProblem));
+                YoYo.with(Techniques.Shake).duration(1500).playOn(fragmentBinding.addProblemForm.crdAddProblem);
                 fragmentBinding.btnAddProblemReportProblem.setEnabled(true);
             }
         });
@@ -98,13 +99,11 @@ public class AddProblemsFragment extends FragmentTemplate implements ProblemObse
                 YoYo.with(Techniques.SlideOutUp).onEnd(new YoYo.AnimatorCallback() {
                     @Override
                     public void call(Animator animator) {
-                        Bundle bundle = new Bundle();
-                        bundle.putString("authToken", authToken);
-                        bundle.putInt("houseId", houseId);
-                        NavHostFragment.findNavController(AddProblemsFragment.this)
-                                .navigate(R.id.action_addProblemFragment_to_tenantStatePagerFragment, bundle);
+                        scheduleJob("Problem " + Integer.toString(problem.getProblemId()), "ProblemUpload");
+                        navigation.navigateBack(AddProblemsFragment.this);
+                        navigation.navigateBack(AddProblemsFragment.this);
                     }
-                }).duration(1000).playOn(fragmentBinding.getRoot().findViewById(R.id.crdAddProblem));
+                }).duration(1000).playOn(fragmentBinding.addProblemForm.crdAddProblem);
                 fragmentBinding.btnAddProblemReportProblem.setEnabled(true);
             }
         });
@@ -114,7 +113,7 @@ public class AddProblemsFragment extends FragmentTemplate implements ProblemObse
     @Override
     public void onClick(View v) {
         File file = new File(context.getCacheDir(), "Problem.jpg");
-        problemViewModel.saveProblem(getProblem(), file, authToken,AddProblemsFragment.this);
+        ViewModelProviders.of(this).get(ProblemViewModel.class).saveProblem(getProblem(), file, authToken,AddProblemsFragment.this);
         v.setEnabled(false);
     }
 }

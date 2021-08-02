@@ -25,6 +25,7 @@ import com.sneydr.roomr_tenant.ViewModels.TenantViewModel;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -37,6 +38,7 @@ public class LoginFragment extends FragmentTemplate implements TenantObserver {
 
     private TextInput email, password;
     private NumberTextInput houseId;
+    private Login login;
 
 
     protected void initUI(View view) {
@@ -63,7 +65,7 @@ public class LoginFragment extends FragmentTemplate implements TenantObserver {
     View.OnClickListener onLogin = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
-            Login login = new Login(email.getText(), password.getText(), houseId.getNumber());
+            login = new Login(email.getText(), password.getText(), houseId.getNumber());
             TenantViewModel tenantViewModel = ViewModelProviders.of(LoginFragment.this).get(TenantViewModel.class);
             tenantViewModel.login(login, LoginFragment.this);
         }
@@ -73,7 +75,8 @@ public class LoginFragment extends FragmentTemplate implements TenantObserver {
     public void onTenant(Tenant tenant) {
         Intent intent = new Intent(getActivity(), MainActivityTenant.class);
         intent.putExtra("authToken", tenant.getAuthToken());
-        intent.putExtra("houseId", tenant.getHouseId());
+        intent.putExtra("houseId", login.getHouseId());
+        intent.putExtra("email", login.getEmail());
         startActivity(intent);
     }
 

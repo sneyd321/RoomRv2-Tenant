@@ -4,49 +4,38 @@ import android.view.animation.Animation;
 
 import com.sneydr.roomr_tenant.App.UI.CircularProgressBarAnimation;
 
+import java.lang.reflect.AccessibleObject;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.List;
 
 
-public class RentDetails {
+public class RentDetails extends AccessibleObject {
 
     private String rentDueDate;
     private int baseRent;
     private int parkingAmount;
     private String rentMadePayableTo;
 
-    public RentDetails(String rentDueDate, int baseRent, int parkingAmount, String rentMadePayableTo) {
-        this.rentDueDate = rentDueDate;
-        this.baseRent = baseRent;
-        this.parkingAmount = parkingAmount;
-        this.rentMadePayableTo = rentMadePayableTo;
 
-    }
 
     public String getTotalRent() {
         NumberFormat formatter = NumberFormat.getCurrencyInstance();
         return formatter.format(baseRent + parkingAmount);
     }
 
-
     public String getRentDueDate() {
         return rentDueDate;
     }
-
     public int getBaseRent() {
         return baseRent;
     }
-
-
     public int getParkingAmount() {
         return parkingAmount;
     }
-
     public String getRentMadePayableTo() {
         return rentMadePayableTo;
     }
-
 
     public String getFormattedDaysLeft() {
         CalendarHandler calendarHandler = new CalendarHandler();
